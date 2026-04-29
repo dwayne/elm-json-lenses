@@ -3,8 +3,8 @@ module Json.Lenses exposing
     , map
     , Json(..)
     , json
-    , bool, number, string, array, objectProperties
-    , property
+    , bool, int, float, string, list, keyValuePairs
+    , field
     , nullable
     )
 
@@ -77,7 +77,8 @@ map f subject (Lens lens) =
 type Json
     = Null
     | Bool Bool
-    | Number Float
+    | Int Int
+    | Float Float
     | String String
     | Array (List Json)
     | Object (List (String, Json))
@@ -111,17 +112,31 @@ bool =
         }
 
 
-number : Lens Json Float
-number =
+int : Lens Json Int
+int =
     Lens
         { get = \subject ->
             case subject of
-                Number f ->
+                Int n ->
+                    Just n
+
+                _ ->
+                    Nothing
+        , set = \n _ -> Just (Int n)
+        }
+
+
+float : Lens Json Float
+float =
+    Lens
+        { get = \subject ->
+            case subject of
+                Float f ->
                     Just f
 
                 _ ->
                     Nothing
-        , set = \f _ -> Just (Number f)
+        , set = \f _ -> Just (Float f)
         }
 
 
@@ -139,22 +154,22 @@ string =
         }
 
 
-array : Lens Json (List Json)
-array =
+list : Lens Json (List Json)
+list =
     Lens
         { get = \subject ->
             case subject of
-                Array a ->
-                    Just a
+                Array l ->
+                    Just l
 
                 _ ->
                     Nothing
-        , set = \a _ -> Just (Array a)
+        , set = \l _ -> Just (Array l)
         }
 
 
-objectProperties : Lens Json (List (String, Json))
-objectProperties =
+keyValuePairs : Lens Json (List (String, Json))
+keyValuePairs =
     Lens
         { get = \subject ->
             case subject of
@@ -167,8 +182,8 @@ objectProperties =
         }
 
 
-property : String -> Lens Json Json
-property name =
+field : String -> Lens Json Json
+field name =
     Lens
         { get = \subject ->
             case subject of
@@ -216,10 +231,10 @@ nullable (Lens lens) =
 --
 -- Tests:
 --
--- get (Number 123) (nullable number) == Just (Just 123)
--- get Null (nullable number) == Just Nothing
--- get (String "abc") (nullable number) == Nothing
--- set (Just 123) (String "abc") (nullable number) == Just (Number 123)
+-- get (Number 123) (nullable int) == Just (Just 123)
+-- get Null (nullable int) == Just Nothing
+-- get (String "abc") (nullable int) == Nothing
+-- set (Just 123) (String "abc") (nullable int) == Just (Number 123)
 --
 
 
@@ -227,7 +242,7 @@ nullable (Lens lens) =
 -- TODO:
 --
 -- [ ] Reverse lens composition
--- [ ] propertyPath
+-- [ ] at
 --
 
 
