@@ -3,7 +3,7 @@ module Json.Lenses exposing
     , map
     , Json(..)
     , json
-    , boolean, number, string, array, objectProperties
+    , bool, number, string, array, objectProperties
     , property
     , nullable
     )
@@ -76,7 +76,7 @@ map f subject (Lens lens) =
 
 type Json
     = Null
-    | Boolean Bool
+    | Bool Bool
     | Number Float
     | String String
     | Array (List Json)
@@ -97,17 +97,17 @@ json =
 --
 
 
-boolean : Lens Json Bool
-boolean =
+bool : Lens Json Bool
+bool =
     Lens
         { get = \subject ->
             case subject of
-                Boolean b ->
+                Bool b ->
                     Just b
 
                 _ ->
                     Nothing
-        , set = \b _ -> Just (Boolean b)
+        , set = \b _ -> Just (Bool b)
         }
 
 
