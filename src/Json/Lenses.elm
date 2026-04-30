@@ -7,6 +7,7 @@ module Json.Lenses exposing
     , field
     , nullable
     , compose
+    , at
     )
 
 
@@ -243,7 +244,7 @@ nullable (Lens lens) =
 -- TODO:
 --
 -- [x] Reverse lens composition
--- [ ] at
+-- [x] at
 --
 
 
@@ -302,6 +303,31 @@ compose (Lens lens2) (Lens lens1) =
 --
 -- metadata = Object [("currency", String "$"), ("price", Int 119)]
 -- price = get metadata (field "price" |> compose int) |> Maybe.withDefault 0
+--
+
+
+at : List String -> Lens Json Json
+at names =
+    List.foldr (\name lens -> field name |> compose lens) json names
+    --
+    -- Suppose names = ["a", "b", "c"]
+    --
+    -- Then, with foldr we get
+    --
+    --   (f "a" (f "b" (f "c" json))) = (field "a" |> compose (field "b" |> compose (field "c" |> compose json)))
+    --
+    -- But, with foldl we get
+    --
+    --   (f "c" (f "b" (f "a" json))) = (field "c" |> compose (field "b" |> compose (field "a" |> compose json))).
+    --
+    -- So, foldr is indeed the correct fold to use.
+    --
+--
+-- Tests:
+--
+-- nestedObj = Object [("a", Object [("b", Int 123)])]
+-- get nestedObj (at ["a", "b"]) == Just (Int 123)
+-- get nestedObj (at ["a", "b"] |> compose int) == Just 123
 --
 
 
