@@ -6,6 +6,7 @@ module Json.Lenses exposing
     , bool, int, float, string, list, keyValuePairs
     , field
     , nullable
+    , compose
     )
 
 
@@ -241,8 +242,66 @@ nullable (Lens lens) =
 --
 -- TODO:
 --
--- [ ] Reverse lens composition
+-- [x] Reverse lens composition
 -- [ ] at
+--
+
+
+compose : Lens b c -> Lens a b -> Lens a c
+compose (Lens lens2) (Lens lens1) =
+    Lens
+        { get = \a ->
+            case lens1.get a of
+                Just b ->
+                    lens2.get b
+
+                Nothing ->
+                    Nothing
+        --
+        -- lens2.set : c -> b -> Maybe b
+        -- lens1.set : b -> a -> Maybe a
+        --       set : c -> a -> Maybe a
+        --
+        -- Where does the b come from?
+        --
+        -- Idea: Get it from lens1.
+        --
+        , set = \c a ->
+            case lens1.get a of
+                Just b1 ->
+                    case lens2.set c b1 of
+                        Just b2 ->
+                            lens1.set b2 a
+
+                        Nothing ->
+                            Nothing
+
+                Nothing ->
+                    Nothing
+        }
+--
+-- Tests:
+--
+-- get (Object [("x", Int 123)]) (field "x" |> compose int) == Just 123
+-- set "new" (Object [("x", Int 123)]) (field "x" |> compose string) == Just (Object [("x", String "new")])
+-- ^
+-- |-- I don't like the order of set's parameters
+--
+-- But I don't think I'd prefer the following:
+--
+--   set : s -> a -> Lens s a -> Maybe s
+--
+-- And, I do want the lens to be the last parameter.
+--
+-- Maybe the lens parameter shouldn't be last.
+--
+--   get : Lens s a -> s -> Maybe a
+--   set : Lens s a -> a -> s -> Maybe s
+--
+-- The example from the article:
+--
+-- metadata = Object [("currency", String "$"), ("price", Int 119)]
+-- price = get metadata (field "price" |> compose int) |> Maybe.withDefault 0
 --
 
 
