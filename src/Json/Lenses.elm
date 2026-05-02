@@ -3,12 +3,14 @@ module Json.Lenses exposing
     , map
     , Json(..)
     , json
-    , bool, int, float, string, list, keyValuePairs
+    , bool, int, float, string, array, list, keyValuePairs
     , field
     , nullable
     , compose
     , at
     )
+
+import Array exposing (Array)
 
 
 type Lens s a =
@@ -82,7 +84,7 @@ type Json
     | Int Int
     | Float Float
     | String String
-    | Array (List Json)
+    | Array (Array Json)
     | Object (List (String, Json))
 
 
@@ -156,18 +158,38 @@ string =
         }
 
 
+array : Lens Json (Array Json)
+array =
+    Lens
+        { get = \subject ->
+            case subject of
+                Array a ->
+                    Just a
+
+                _ ->
+                    Nothing
+        , set = \a _ -> Just (Array a)
+        }
+
+
 list : Lens Json (List Json)
 list =
     Lens
         { get = \subject ->
             case subject of
-                Array l ->
-                    Just l
+                Array a ->
+                    Just (Array.toList a)
 
                 _ ->
                     Nothing
-        , set = \l _ -> Just (Array l)
+        , set = \l _ -> Just (Array <| Array.fromList l)
         }
+--
+-- subject = Array (Array.fromList [Null, Bool True, Bool False, Int 5, Float 3.14, String "Hello, world!"])
+--
+-- get subject array
+-- get subject list
+--
 
 
 keyValuePairs : Lens Json (List (String, Json))
