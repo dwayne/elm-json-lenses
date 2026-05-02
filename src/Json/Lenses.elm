@@ -3,7 +3,7 @@ module Json.Lenses exposing
     , map
     , Json(..)
     , json
-    , bool, int, float, string, array, list, keyValuePairs
+    , bool, int, float, string, array, list, index, keyValuePairs
     , field
     , nullable
     , compose
@@ -189,6 +189,38 @@ list =
 --
 -- get subject array
 -- get subject list
+--
+
+
+index : Int -> Lens Json Json
+index i =
+    Lens
+        { get = \subject ->
+            case subject of
+                Array a ->
+                    Array.get i a
+
+                _ ->
+                    Nothing
+        , set = \newValue subject ->
+            case subject of
+                Array a ->
+                    Just (Array <| Array.set i newValue a)
+
+                _ ->
+                    Nothing
+        }
+--
+-- subject = Array (Array.fromList [Null, Bool True, Bool False, Int 5, Float 3.14, String "Hello, world!"])
+--
+-- get subject (index -1)
+-- get subject (index 0)
+-- get subject (index 1)
+-- get subject (index 2)
+-- get subject (index 3)
+-- get subject (index 4)
+-- get subject (index 5)
+-- get subject (index 6)
 --
 
 
